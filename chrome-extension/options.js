@@ -3,12 +3,7 @@
 function get_tabs(callback) {
   chrome.tabs.query({}, function(tabs) {
     // chrome.storage.sync.set({tabs: JSON.stringify(tabs)});
-    let tabsinfo = {};
-    tabs.forEach(tab => {
-      tabsinfo[tab.windowId] = tabsinfo[tab.windowId] || {tabs:[]};
-      tabsinfo[tab.windowId].tabs.push(tab)
-    });
-    callback(tabsinfo)
+    callback(tabs)
   })
 }
 
@@ -25,45 +20,38 @@ class output {
   }
 }
 
-function format_json(tabsinfo) {
+function format_json(tabs) {
     let o = new output();
-    o.add(JSON.stringify(tabsinfo));
+    o.add(JSON.stringify(tabs, function(key, value) {
+      return value
+    }, 4));
     o.done();
     return
 }
 
-function format_html(tabsinfo) {
+function format_md(tabs) {
   let o = new output();
-  for (let winId in tabsinfo) {
-    o.add('# Window #' + winId);
-    for (let tab of tabsinfo[winId].tabs) {
-      let status = [];
-      let search_states = ['highlighted', 'active', 'pinned', 'audible', 'discarded'];
-      for (let state of search_states) {
-        tab[state] && status.push(state);
-      }
-      tab.openerTabId && status.push(`opened by #${tab.openerTabId}`);
-      console.log(status)
-      o.add(`## ${tab.index+1}. Tab #${tab.id} -- ${status.join(',')}`);
-      o.add(`${tab.title}`);
-      o.add(`${tab.url}`);
-      for (let key of ['sessionId']) {
-        o.add(tab[key]);
-      }
-      o.add(JSON.stringify(tab, function(key, value) {
-        if (search_states.includes(key)) {
-          return undefined;
-        }
-        if (key == 'url') {
-          return undefined;
-        }
-        return value
-      }));
-      o.add();
-
+  let urls=[];
+  let currentWindowId=0;
+  o.add(`Time: ${new Date().toLocaleString()}`);
+  for (let tab of tabs) {
+    if (currentWindowId != tab.windowId) {
+      o.add()
+      o.add(`Window #${tab.windowId}:`);
+      currentWindowId = tab.windowId;
+    }
+    o.add(`- ${tab.title} [tab-${tab.id}][#${tab.id}]`);
+    if (tab.openerTabId) {
+      o.add(`-- opened by [tab-${tab.openerTabId}][#${tab.openerTabId}]`);
     }
   }
-  o.done()
+  o.add();
+  o.add('---');
+  o.add();
+  for (let tab of tabs) {
+    o.add(`[#${tab.id}]: ${tab.url}`);
+  }
+  o.done();
 }
 
-get_tabs(format_html);
+get_tabs(format_md);
