@@ -32,12 +32,13 @@ function __install {
 function __confirm {
   echo $@
   read -p 'Are you sure? y|N '
-  case $REPLY in [^yY]) echo "cancled.";; esac
-  echo $@
+  case $REPLY in [^yY]) echo "cancled."; return 1;; esac
+  "$@"
+  return 0
 }
 
 function __move {
-  __confirm mv $files__ $datadir__
+  __confirm mv "$files__" $datadir__ || return
   git add -A
   git commit -m'Updates the changes'
 }
