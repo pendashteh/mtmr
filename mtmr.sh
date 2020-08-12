@@ -31,7 +31,8 @@ function __install {
 
 function __confirm {
   echo $@
-  read -p 'Are you sure? y|N '
+  read -p 'Are you sure? y|N ' -n1
+  echo ''
   case $REPLY in [^yY]) echo "cancled."; return 1;; esac
   "$@"
   return 0
