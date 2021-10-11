@@ -1,23 +1,15 @@
 #!/usr/bin/env bash
 
-datadir__=$HOME/.mtmr/
+# Usage:
+# alias mtmr='__confirm__= default_input__=~/Downloads/mtmr.html /path/to/mtmr.sh move'
 
-function main {
-  __init || return
-  __installed || __install || return
-  __process_args "$@" || return
-  __move
-}
+default_input__=${default_input__:-''}
+datadir__=${datadir__:-$HOME/.mtmr/}
 
-function __process_args {
-  [ -z "$1" ] && return 1
-  files__="$@"
-  return 0
-}
-
-function __init {
+function __puton__ {
   mkdir -p $datadir__
   cd $datadir__
+  __installed || __install
 }
 
 function __installed {
@@ -29,19 +21,14 @@ function __install {
   git commit --allow-empty -m'empty'
 }
 
-function __confirm {
-  echo $@
-  read -p 'Are you sure? y|N ' -n1
-  echo ''
-  case $REPLY in [^yY]) echo "cancled."; return 1;; esac
-  "$@"
-  return 0
-}
-
-function __move {
-  __confirm mv "$files__" $datadir__ || return
+move__help='@arg files @does move $files to datadir__ @prints null'
+move__ () {
+  files__="${@:-$default_input__}"
+  [ -z "$files__" ] && return -1
+  __exec mv "$files__" $datadir__ || return
   git add -A
   git commit -m'Updates the changes'
 }
 
-main "$@"
+. undies
+
