@@ -25,7 +25,7 @@ move__help='@arg files @does move $files to datadir__ @prints null'
 move__ () {
   files__="${@:-$default_input__}"
   [ -z "$files__" ] && return -1
-  __exec mv "$files__" $datadir__ || return
+  __exec mv $files__ $datadir__ || return
   git add -A
   git commit -m'Updates the changes'
 }
