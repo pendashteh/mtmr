@@ -1,7 +1,11 @@
 'use strict';
 
-function get_tabs(callback) {
-  chrome.tabs.query({}, function(tabs) {
+function get_tabs(callback, onlyCurrentWindow) {
+  let queryInfo = {}
+  if (onlyCurrentWindow) {
+    queryInfo.currentWindow = true
+  }
+  chrome.tabs.query(queryInfo, function(tabs) {
     // chrome.storage.sync.set({tabs: JSON.stringify(tabs)});
     callback(tabs)
   })
@@ -61,7 +65,6 @@ function format_md(tabs) {
   o.done();
 }
 
-
 function format_groups(tabs) {
   let o = new output();
   let urls=[];
@@ -83,29 +86,45 @@ function format_groups(tabs) {
   o.done();
 }
 
-function page_call(page) {
-  switch (page) {
-    case 'main':
-      // @TODO populate windows in select
-    break;
-    case 'groups':
-      get_tabs(format_groups);
-    break;
-    case 'export':
-      get_tabs(format_md);
-    break;
-    case 'json':
-      get_tabs(format_json);
-    break;
-    default:
+
+class App {
+  constructor() {
+
+  }
+  call () {
+    let onlyCurrentWindow = (this.scope == 'current')
+    switch (this.page) {
+      case 'main':
+        // @TODO populate windows in select
+      break;
+      case 'groups':
+        get_tabs(format_groups, onlyCurrentWindow);
+      break;
+      case 'export':
+        get_tabs(format_md, onlyCurrentWindow);
+      break;
+      case 'json':
+        get_tabs(format_json, onlyCurrentWindow);
+      break;
+      default:
+    }
   }
 }
-
 
 var anchor_click = function () {
   document.getElementById('menu').style.display='none';
   let page = this.getAttribute('data-page');
-  page_call(page)
+  let buttons = document.getElementsByName('scope')
+  let scope
+  for (let button of buttons) {
+    if (button.checked) {
+      scope = button.value
+    }
+  }
+  let app = new App;
+  app.page = page;
+  app.scope = scope;
+  app.call(page, scope)
 }
 
 document.addEventListener('DOMContentLoaded', function () {
