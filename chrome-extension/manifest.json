@@ -3,12 +3,14 @@
   "version": "1.2",
   "description": "My Tabs, My Rules!",
   "permissions": ["storage", "tabs"],
-  "options_page": "mtmr.html",
   "icons": {
     "16": "images/mtmr-16.png",
     "32": "images/mtmr-32.png",
     "48": "images/mtmr-48.png",
     "128": "images/mtmr-128.png"
+  },
+  "browser_action": {
+    "default_popup": "popup.html"
   },
   "manifest_version": 2
 }
