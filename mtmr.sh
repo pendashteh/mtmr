@@ -21,6 +21,12 @@ function __install {
   git commit --allow-empty -m'empty'
 }
 
+git__help='@arg git arguments @does run git against the data log.'
+git__ () {
+  cd $datadir__
+  git $@
+}
+
 move__help='@arg files @does move $files to datadir__ @prints null'
 move__ () {
   files__="${@:-$default_input__}"
